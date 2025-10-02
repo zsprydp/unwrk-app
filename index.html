@@ -261,16 +261,21 @@
                 this.init();
                 this.stop();
                 
-                const frequencies = [432, 540, 648];
-                const gains = [volume, volume * 0.5, volume * 0.3];
+                // Use 528Hz (love frequency) and 432Hz (natural tuning) with gentle harmonics
+                const frequencies = [432, 528, 639]; // 639Hz is for connection/relationships
+                const gains = [volume * 0.6, volume * 0.8, volume * 0.4];
                 
                 frequencies.forEach((freq, i) => {
                     const osc = this.audioContext.createOscillator();
                     const gain = this.audioContext.createGain();
                     
-                    osc.type = 'sine';
+                    osc.type = 'sine'; // Pure sine wave for meditation
                     osc.frequency.value = freq;
                     gain.gain.value = gains[i];
+                    
+                    // Gentle fade in
+                    gain.gain.setValueAtTime(0, this.audioContext.currentTime);
+                    gain.gain.linearRampToValueAtTime(gains[i], this.audioContext.currentTime + 2);
                     
                     osc.connect(gain);
                     gain.connect(this.audioContext.destination);
@@ -378,6 +383,7 @@
             const [showAuthModal, setShowAuthModal] = useState(false);
             const [authEmail, setAuthEmail] = useState('');
             const [isPremium, setIsPremium] = useState(Backend.storage.user.isPremium);
+            const [audioUnlocked, setAudioUnlocked] = useState(false);
             
             const intervalRef = useRef(null);
             const startTimeRef = useRef(null);
@@ -386,7 +392,7 @@
                 { id: 'none', name: 'None', desc: 'Silent focus', free: true },
                 { id: 'white', name: 'White Noise', desc: 'Full spectrum', free: true },
                 { id: 'brown', name: 'Brown Noise', desc: 'Deep & calming', free: true },
-                { id: 'meditation', name: 'Meditation', desc: 'Deep calm', free: true },
+                { id: 'meditation', name: 'Meditation', desc: 'Solfeggio tones', free: true },
                 { id: 'beta-8', name: 'Beta 8Hz', desc: 'Relaxed focus', free: false },
                 { id: 'beta-18', name: 'Beta 18Hz', desc: 'Alert focus', free: false },
                 { id: 'beta-34', name: 'Beta 34Hz', desc: 'Peak focus', free: false },
@@ -555,6 +561,21 @@
             };
 
             const toggleSound = () => {
+                // Unlock audio on iOS with direct user interaction
+                if (!audioUnlocked) {
+                    AudioEngine.init();
+                    if (AudioEngine.audioContext?.state === 'suspended') {
+                        AudioEngine.audioContext.resume().then(() => {
+                            setAudioUnlocked(true);
+                            setSoundEnabled(true);
+                        });
+                    } else {
+                        setAudioUnlocked(true);
+                        setSoundEnabled(true);
+                    }
+                    return;
+                }
+                
                 if (!soundEnabled && selectedSound === 'none') {
                     setShowSoundMenu(true);
                 } else {
@@ -683,6 +704,14 @@
                                             {soundEnabled ? <Volume2 /> : <VolumeX />}
                                         </button>
                                     </div>
+                                    
+                                    {!audioUnlocked && (
+                                        <div className={`mb-3 p-3 rounded-lg ${darkMode ? 'bg-amber-900/20 border border-amber-700/30' : 'bg-amber-50 border border-amber-200'}`}>
+                                            <p className={`text-xs ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>
+                                                📱 Tap the volume button above to enable sound on your device
+                                            </p>
+                                        </div>
+                                    )}
                                     
                                     <div className="grid grid-cols-2 gap-2">
                                         {soundOptions.slice(0, 8).map(option => {
