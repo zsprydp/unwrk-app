@@ -480,6 +480,14 @@
                     startTimeRef.current = new Date();
                     setDarkMode(true);
                     
+                    // Initialize AudioContext on user interaction (required for iOS)
+                    if (!AudioEngine.audioContext) {
+                        AudioEngine.init();
+                    }
+                    if (AudioEngine.audioContext?.state === 'suspended') {
+                        AudioEngine.audioContext.resume();
+                    }
+                    
                     if (mode === 'focus' && settings.focusSound !== 'none') {
                         setSelectedSound(settings.focusSound);
                         setSoundEnabled(true);
@@ -512,6 +520,11 @@
                     setShowUpgradeModal(true);
                     setSoundEnabled(false);
                     return;
+                }
+                
+                // iOS requires AudioContext to be resumed on user interaction
+                if (AudioEngine.audioContext && AudioEngine.audioContext.state === 'suspended') {
+                    AudioEngine.audioContext.resume();
                 }
                 
                 switch(soundType) {
@@ -612,7 +625,7 @@
                                 <button
                                     key={v}
                                     onClick={() => setView(v)}
-                                    className={`flex-1 py-3 rounded-xl transition-all ${
+                                    className={`flex-1 py-3 rounded-xl transition-all flex items-center justify-center ${
                                         view === v 
                                             ? darkMode ? 'bg-purple-600 text-white' : 'bg-indigo-600 text-white' 
                                             : darkMode ? 'text-slate-300 hover:bg-slate-700/50' : 'text-slate-700 hover:bg-white/50'
