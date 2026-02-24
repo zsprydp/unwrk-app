@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import AudioEngine from './lib/AudioEngine';
 import Backend from './lib/Backend';
 import soundOptions from './lib/soundOptions';
+import { isSupabaseConfigured } from './lib/supabase';
+import { pushSession, pushSettings } from './lib/sync';
+import { useAuth } from './context/AuthContext';
 import { CalendarIcon, TrendingUp, SettingsIcon } from './components/icons';
 import Celebration from './components/Celebration';
 import TimerView from './components/TimerView';
@@ -13,8 +16,10 @@ import UpgradeModal from './components/UpgradeModal';
 import AuthModal from './components/AuthModal';
 
 export default function App() {
+  const { user } = useAuth();
+
   const [mode, setMode] = useState('focus');
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState(Backend.storage.user.settings.focusDuration * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
   const [currentTask, setCurrentTask] = useState('');
@@ -31,7 +36,6 @@ export default function App() {
   const [selectedSound, setSelectedSound] = useState('none');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authEmail, setAuthEmail] = useState('');
   const [isPremium, setIsPremium] = useState(Backend.storage.user.isPremium);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
@@ -41,6 +45,12 @@ export default function App() {
   useEffect(() => {
     setSuggestion(Backend.getSmartSuggestion());
   }, []);
+
+  // Persist settings to localStorage whenever they change
+  useEffect(() => {
+    Backend.updateSettings(settings);
+    if (user) pushSettings(settings, user.id);
+  }, [settings, user]);
 
   useEffect(() => {
     if (soundEnabled && selectedSound !== 'none') {
@@ -89,6 +99,8 @@ export default function App() {
     };
 
     await Backend.saveSession(session);
+    if (user) pushSession(session, user.id);
+
     setTimeout(() => setShowCelebration(false), 3000);
 
     if (mode === 'focus') {
@@ -244,18 +256,18 @@ export default function App() {
     setSoundEnabled(soundId !== 'none');
   };
 
-  const handleAuth = () => {
+  const handleDemoUpgrade = (email) => {
     setIsPremium(true);
-    Backend.storage.user.isPremium = true;
-    Backend.storage.user.email = authEmail;
-    setShowAuthModal(false);
-    alert('Welcome to Premium! 🎉 (This is a demo)');
+    Backend.updateUser({ isPremium: true, email });
+    alert('Welcome to Premium! 🎉 (This is a demo — connect Supabase for real auth)');
   };
 
   const analytics = Backend.getAnalytics();
   const streak = Backend.storage.user.streak;
   const totalSessions = Backend.storage.user.totalSessions;
   const bgGradient = darkMode ? 'bg-slate-950' : 'bg-white';
+
+  const connectionBadge = isSupabaseConfigured ? (user ? '🟢 Synced' : '🔵 Online') : null;
 
   return (
     <div
@@ -285,10 +297,17 @@ export default function App() {
           >
             Do less, achieve more
           </p>
-          {!isPremium && (
+          {connectionBadge && (
+            <span
+              className={`inline-block mt-2 text-xs px-3 py-1 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}
+            >
+              {connectionBadge}
+            </span>
+          )}
+          {!isPremium && !user && (
             <button
               onClick={() => setShowAuthModal(true)}
-              className="mt-4 text-xs px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:scale-105 transition-transform shadow-lg"
+              className="mt-4 block mx-auto text-xs px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:scale-105 transition-transform shadow-lg"
             >
               ✨ Upgrade to Premium
             </button>
@@ -392,10 +411,8 @@ export default function App() {
         {showAuthModal && (
           <AuthModal
             darkMode={darkMode}
-            authEmail={authEmail}
-            onChangeEmail={setAuthEmail}
-            onSubmit={handleAuth}
             onClose={() => setShowAuthModal(false)}
+            onDemoUpgrade={handleDemoUpgrade}
           />
         )}
       </div>

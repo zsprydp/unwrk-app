@@ -1,32 +1,22 @@
+import { load, save, defaults } from './storage';
+
 const Backend = {
-  storage: {
-    sessions: [],
-    tasks: [],
-    user: {
-      streak: 0,
-      totalSessions: 0,
-      lastSessionDate: null,
-      isPremium: false,
-      email: null,
-      settings: {
-        focusDuration: 25,
-        shortBreak: 5,
-        longBreak: 15,
-        sessionsBeforeLongBreak: 4,
-        smartSuggestion: true,
-        softBlocking: true,
-        ambientSound: true,
-        darkMode: false,
-        focusSound: 'none',
-        breakSound: 'none',
-      },
-    },
+  storage: load(),
+
+  persist() {
+    save(this.storage);
+  },
+
+  reset() {
+    this.storage = structuredClone(defaults);
+    this.persist();
   },
 
   async saveSession(session) {
     this.storage.sessions.push(session);
     this.storage.user.totalSessions++;
     this.updateStreak();
+    this.persist();
     return session;
   },
 
@@ -43,6 +33,17 @@ const Backend = {
     }
 
     this.storage.user.lastSessionDate = today;
+    this.persist();
+  },
+
+  updateSettings(newSettings) {
+    this.storage.user.settings = { ...this.storage.user.settings, ...newSettings };
+    this.persist();
+  },
+
+  updateUser(fields) {
+    this.storage.user = { ...this.storage.user, ...fields };
+    this.persist();
   },
 
   getSmartSuggestion() {
