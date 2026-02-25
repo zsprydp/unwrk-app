@@ -22,9 +22,18 @@ Opens on `http://localhost:5173` with HMR. See `package.json` scripts for all co
 - **Build**: `npm run build`
 
 ### Deployment
-`vercel.json` is pre-configured. Set env vars in the hosting dashboard per `.env.example`. Database schema for Supabase is in `supabase/schema.sql`.
+`vercel.json` is pre-configured. Set env vars in the hosting dashboard per `.env.example`.
+
+### Supabase setup
+The database schema is in `supabase/schema.sql`. To enable cloud sync:
+1. Create a Supabase project and set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env.local`.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor (Dashboard → SQL Editor → New query → paste → Run). This creates `profiles` and `sessions` tables, RLS policies, and an auto-profile trigger.
+3. Add `http://localhost:5173` to Authentication → URL Configuration → Redirect URLs.
+
+Without the schema, auth still initializes but sync operations log warnings and fall back to localStorage.
 
 ### Key caveats
 - Tailwind CSS v4 via `@tailwindcss/vite` — no `tailwind.config.js`. Import is `@import 'tailwindcss'` in `src/index.css`.
 - ESLint shows 2-3 warnings (exhaustive-deps, react-refresh) — intentional, not errors.
 - Service worker uses network-first for Vite hashed `/assets/` and cache-first for static PWA files.
+- `.env.local` is gitignored; create it from `.env.example` when setting up a new environment.
