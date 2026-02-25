@@ -1,6 +1,27 @@
+import { useState } from 'react';
 import { Check } from './icons';
+import { isStripeConfigured, PRICES, redirectToCheckout } from '../lib/stripe';
 
-export default function UpgradeModal({ darkMode, onClose, onShowAuth }) {
+export default function UpgradeModal({ darkMode, userEmail, onClose, onShowAuth }) {
+  const [plan, setPlan] = useState('monthly');
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    if (!isStripeConfigured) {
+      onClose();
+      onShowAuth();
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await redirectToCheckout({
+      priceId: PRICES[plan].id,
+      customerEmail: userEmail,
+    });
+    if (error) console.warn('Checkout error:', error.message);
+    setLoading(false);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-6">
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-3xl p-8 max-w-md w-full`}>
@@ -34,15 +55,34 @@ export default function UpgradeModal({ darkMode, onClose, onShowAuth }) {
           </div>
         </div>
 
+        <div className="flex gap-2 mb-4">
+          {Object.entries(PRICES).map(([key, price]) => (
+            <button
+              key={key}
+              onClick={() => setPlan(key)}
+              className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
+                plan === key
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
+                  : darkMode
+                    ? 'bg-slate-700 text-slate-300'
+                    : 'bg-slate-100 text-slate-700'
+              }`}
+            >
+              {price.label}
+              {key === 'yearly' && (
+                <span className="block text-xs opacity-75 mt-0.5">Save 35%</span>
+              )}
+            </button>
+          ))}
+        </div>
+
         <div className="space-y-3">
           <button
-            onClick={() => {
-              onClose();
-              onShowAuth();
-            }}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold hover:scale-105 transition-transform"
+            onClick={handleCheckout}
+            disabled={loading}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold hover:scale-105 transition-transform disabled:opacity-60"
           >
-            $4.99/month or $39/year
+            {loading ? 'Redirecting…' : `Subscribe — ${PRICES[plan].label}`}
           </button>
           <button
             onClick={onClose}

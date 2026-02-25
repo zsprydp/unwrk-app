@@ -306,7 +306,7 @@ export default function App() {
           )}
           {!isPremium && !user && (
             <button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => setShowUpgradeModal(true)}
               className="mt-4 block mx-auto text-xs px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:scale-105 transition-transform shadow-lg"
             >
               ✨ Upgrade to Premium
@@ -403,6 +403,7 @@ export default function App() {
         {showUpgradeModal && (
           <UpgradeModal
             darkMode={darkMode}
+            userEmail={user?.email || Backend.storage.user.email}
             onClose={() => setShowUpgradeModal(false)}
             onShowAuth={() => setShowAuthModal(true)}
           />

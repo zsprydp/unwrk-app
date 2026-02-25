@@ -1,36 +1,44 @@
-const CACHE_NAME = 'unwrk-v1';
-const urlsToCache = [
-  '.',
-  'index.html',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.png'
-];
+const CACHE_NAME = 'unwrk-v2';
 
-self.addEventListener('install', event => {
+const PRECACHE_URLS = ['.', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)),
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((names) =>
+      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))),
+    ),
   );
+  self.clients.claim();
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+
+  if (request.method !== 'GET') return;
+
+  // Network-first for navigation and JS/CSS assets (Vite uses hashed filenames)
+  if (request.mode === 'navigate' || request.url.includes('/assets/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
         })
-      );
-    })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  // Cache-first for static assets (icons, manifest)
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request)),
   );
 });
