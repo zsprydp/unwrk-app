@@ -2,6 +2,8 @@
 
 Do less, achieve more.
 
+**Live:** [unwrk.space](https://unwrk.space)
+
 ## Tech Stack
 
 - **React 18** with JSX
@@ -9,10 +11,13 @@ Do less, achieve more.
 - **Tailwind CSS v4**
 - **Web Audio API** for binaural beats and ambient sounds
 - **PWA** with service worker and manifest
+- **Supabase** for auth + cloud sync (optional)
+- **Stripe** for payments (optional)
 
 ## Getting Started
 
 ```bash
+cp .env.example .env.local  # then fill in your keys
 npm install
 npm run dev
 ```
@@ -39,18 +44,24 @@ src/
 ├── components/
 │   ├── icons/          # SVG icon components
 │   ├── AnalyticsView   # Progress & analytics panel
-│   ├── AuthModal       # Premium auth flow
+│   ├── AuthModal       # Magic link auth flow
 │   ├── Celebration     # Session complete overlay
 │   ├── NoteInputModal  # Quick note capture
 │   ├── SettingsView    # Timer & sound settings
 │   ├── SoundPanel      # Ambient sound picker
 │   ├── TaskInputModal  # Task entry dialog
 │   ├── TimerView       # Main timer with controls
-│   └── UpgradeModal    # Premium upsell
+│   └── UpgradeModal    # Stripe plan selection
+├── context/
+│   └── AuthContext      # Supabase auth provider
 ├── lib/
 │   ├── AudioEngine.js  # Web Audio API sound engine
-│   ├── Backend.js      # In-memory backend simulation
-│   └── soundOptions.js # Sound configuration data
+│   ├── Backend.js      # localStorage-backed data layer
+│   ├── soundOptions.js # Sound configuration data
+│   ├── storage.js      # localStorage abstraction
+│   ├── stripe.js       # Stripe checkout integration
+│   ├── supabase.js     # Supabase client
+│   └── sync.js         # Cloud sync (push/pull)
 ├── App.jsx             # Root component
 ├── index.css           # Global styles + Tailwind
 └── main.jsx            # Entry point
@@ -59,16 +70,18 @@ public/
 ├── service-worker.js   # Offline caching
 ├── icon-192.png        # PWA icon
 └── icon-512.png        # PWA icon
+supabase/
+└── schema.sql          # Database migration
 ```
 
 ## Features
 
 - **Free Tier**: Timer, White/Brown/Pink Noise, Meditation sounds
-- **Premium ($4.99/mo)**: Binaural beats, Analytics, Goal tracking
+- **Premium ($4.99/mo or $39/yr)**: Binaural beats, Analytics, Goal tracking
 
 ## Deployment
 
-The project includes a `vercel.json` for one-click deployment to [Vercel](https://vercel.com).
+The project includes a `vercel.json` for one-click deployment to [Vercel](https://vercel.com). Set your custom domain to `unwrk.space` in the Vercel dashboard.
 
 Set the following environment variables in your hosting dashboard (all optional):
 
@@ -88,4 +101,4 @@ GitHub Actions runs lint + test + build on every push to `main` and on pull requ
 
 ---
 
-Created for Spry Data Partners | [sprydp.com](https://sprydp.com)
+[unwrk.space](https://unwrk.space)
