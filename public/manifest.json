@@ -3,10 +3,12 @@
   "short_name": "UnWrk",
   "description": "Do less, achieve more. Focus timer with binaural beats",
   "start_url": ".",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#6366f1",
   "orientation": "portrait",
+  "scope": "/",
   "icons": [
     {
       "src": "icon-192.png",
@@ -21,12 +23,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "lifestyle", "health"],
-  "screenshots": [
-    {
-      "src": "screenshot1.png",
-      "sizes": "540x720",
-      "type": "image/png"
-    }
-  ]
+  "categories": ["productivity", "lifestyle", "health"]
 }

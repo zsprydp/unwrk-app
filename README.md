@@ -2,76 +2,103 @@
 
 Do less, achieve more.
 
-## 🚀 GitHub Pages Deployment
+**Live:** [unwrk.space](https://unwrk.space)
 
-### Step 1: Create New Repository
-1. Go to [github.com/new](https://github.com/new)
-2. Name it: `unwrk-app`
-3. Make it **Public**
-4. ✅ Initialize with README
-5. Click **Create repository**
+## Tech Stack
 
-### Step 2: Upload Files
-1. Click **Add file** → **Upload files**
-2. Drag and drop all these files:
-   - index.html
-   - manifest.json
-   - service-worker.js
-   - icon-192.png
-   - icon-512.png
-   - README.md
-3. Commit changes
+- **React 18** with JSX
+- **Vite** build tool
+- **Tailwind CSS v4**
+- **Web Audio API** for binaural beats and ambient sounds
+- **PWA** with service worker and manifest
+- **Supabase** for auth + cloud sync (optional)
+- **Stripe** for payments (optional)
 
-### Step 3: Enable GitHub Pages
-1. Go to **Settings** tab
-2. Click **Pages** in sidebar
-3. Under "Source", select:
-   - Branch: **main**
-   - Folder: **/ (root)**
-4. Click **Save**
-5. Wait 2-3 minutes
+## Getting Started
 
-### Step 4: Access Your App
-Your app will be live at:
-```
-https://YOUR-USERNAME.github.io/unwrk-app/
+```bash
+cp .env.example .env.local  # then fill in your keys
+npm install
+npm run dev
 ```
 
-### Step 5 (Optional): Custom Domain
-To use `app.sprydp.com`:
+Open [http://localhost:5173](http://localhost:5173).
 
-1. In your repo settings → Pages → Custom domain
-2. Enter: `app.sprydp.com`
-3. In your domain DNS settings (where you manage sprydp.com), add:
-   ```
-   Type: CNAME
-   Name: app
-   Value: YOUR-USERNAME.github.io
-   ```
-4. Wait for DNS propagation (5-30 minutes)
-5. ✅ Enable "Enforce HTTPS" in GitHub Pages settings
+## Scripts
 
-## 📱 PWA Features
-- ✅ Install to home screen
-- ✅ Works offline
-- ✅ Full-screen mode
-- ✅ Fast loading
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server with HMR |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Auto-format with Prettier |
+| `npm run format:check` | Check formatting without writing |
+| `npm test` | Run Vitest test suite |
+| `npm run test:watch` | Run tests in watch mode |
 
-## 🎯 What's Included
-- **Free Tier**: Timer, White/Brown Noise, Meditation sounds
-- **Premium ($4.99/mo)**: Binaural beats, Analytics, Goal tracking
+## Project Structure
 
-## 🔧 Tech Stack
-- React 18
-- Tailwind CSS
-- Web Audio API
-- Service Workers (PWA)
+```
+src/
+├── components/
+│   ├── icons/          # SVG icon components
+│   ├── AnalyticsView   # Progress & analytics panel
+│   ├── AuthModal       # Magic link auth flow
+│   ├── Celebration     # Session complete overlay
+│   ├── NoteInputModal  # Quick note capture
+│   ├── SettingsView    # Timer & sound settings
+│   ├── SoundPanel      # Ambient sound picker
+│   ├── TaskInputModal  # Task entry dialog
+│   ├── TimerView       # Main timer with controls
+│   └── UpgradeModal    # Stripe plan selection
+├── context/
+│   └── AuthContext      # Supabase auth provider
+├── lib/
+│   ├── AudioEngine.js  # Web Audio API sound engine
+│   ├── Backend.js      # localStorage-backed data layer
+│   ├── soundOptions.js # Sound configuration data
+│   ├── storage.js      # localStorage abstraction
+│   ├── stripe.js       # Stripe checkout integration
+│   ├── supabase.js     # Supabase client
+│   └── sync.js         # Cloud sync (push/pull)
+├── App.jsx             # Root component
+├── index.css           # Global styles + Tailwind
+└── main.jsx            # Entry point
+public/
+├── manifest.json       # PWA manifest
+├── service-worker.js   # Offline caching
+├── icon-192.png        # PWA icon
+└── icon-512.png        # PWA icon
+supabase/
+└── schema.sql          # Database migration
+```
 
-## 📊 Next Steps
-1. Deploy and test
-2. Gather user feedback
-3. Convert to React Native for app stores
-4. Integrate real authentication & payments
+## Features
+
+- **Free Tier**: Timer, White/Brown/Pink Noise, Meditation sounds
+- **Premium ($4.99/mo or $39/yr)**: Binaural beats, Analytics, Goal tracking
+
+## Deployment
+
+The project includes a `vercel.json` for one-click deployment to [Vercel](https://vercel.com). Set your custom domain to `unwrk.space` in the Vercel dashboard.
+
+Set the following environment variables in your hosting dashboard (all optional):
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_SUPABASE_URL` | Supabase project URL for auth + cloud sync |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key for payments |
+| `VITE_STRIPE_PRICE_MONTHLY` | Stripe Price ID for monthly plan |
+| `VITE_STRIPE_PRICE_YEARLY` | Stripe Price ID for yearly plan |
+
+See `.env.example` for details.
+
+## CI
+
+GitHub Actions runs lint + test + build on every push to `main` and on pull requests.
 
 ---
-Created for Spry Data Partners | [sprydp.com](https://sprydp.com)
+
+[unwrk.space](https://unwrk.space)
